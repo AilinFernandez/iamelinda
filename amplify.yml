@@ -3,12 +3,12 @@ frontend:
   phases:
     preBuild:
       commands:
-        - ls -la
         - npm install
-        - ls -la frontend
         - cd frontend && npm install
     build:
       commands:
+        - ls -la
+        - pwd
         - cd frontend && npm run build
   artifacts:
     baseDirectory: frontend/build
