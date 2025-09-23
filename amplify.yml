@@ -7,9 +7,7 @@ frontend:
         - cd frontend && npm install
     build:
       commands:
-        - ls -la
-        - pwd
-        - cd frontend && npm run build
+        - npm run build
   artifacts:
     baseDirectory: frontend/build
     files:
