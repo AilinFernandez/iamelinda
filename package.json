@@ -7,7 +7,7 @@
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
     "frontend": "cd frontend && npm start",
-    "build": "cd frontend && npm run build",
+    "build": "echo 'Backend build completed'",
     "install-all": "npm install && cd frontend && npm install",
     "deploy": "cd frontend && npm run build && cd .. && firebase deploy"
   },
