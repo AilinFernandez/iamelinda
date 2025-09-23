@@ -1,4 +1,16 @@
 version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - npm install
+  artifacts:
+    baseDirectory: .
+    files:
+      - 'backend/**/*'
+      - 'node_modules/**/*'
+      - 'package.json'
+      - 'package-lock.json'
 frontend:
   phases:
     preBuild:
