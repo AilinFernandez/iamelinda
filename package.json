@@ -1,0 +1,38 @@
+{
+  "name": "iamelinda-fanfic-recommender",
+  "version": "1.0.0",
+  "description": "Sistema de recomendación de fanfics con IA",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "frontend": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "install-all": "npm install && cd frontend && npm install",
+    "deploy": "cd frontend && npm run build && cd .. && firebase deploy"
+  },
+  "keywords": [
+    "fanfics",
+    "ai",
+    "recommendations",
+    "react",
+    "firebase"
+  ],
+  "author": "iamelinda",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "cheerio": "^1.1.2",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.11.0",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.20.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
