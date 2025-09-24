@@ -43,6 +43,41 @@ function Admin() {
     enlace: ''
   });
 
+  // Estados para nuevas secciones
+  const [reviews, setReviews] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [libraryItems, setLibraryItems] = useState([]);
+  
+  // Estados para formularios
+  const [reviewForm, setReviewForm] = useState({
+    title: '',
+    summary: '',
+    category: 'Books',
+    rating: 5,
+    tags: '',
+    image: 'book'
+  });
+  
+  const [postForm, setPostForm] = useState({
+    title: '',
+    summary: '',
+    category: 'Personal',
+    tags: '',
+    image: 'heart'
+  });
+  
+  const [libraryForm, setLibraryForm] = useState({
+    title: '',
+    author: '',
+    type: 'Book',
+    genre: '',
+    rating: 5,
+    status: 'Completed',
+    year: '',
+    description: '',
+    tags: ''
+  });
+
   // Verificar autenticación y cargar datos
   useEffect(() => {
     const savedPassword = localStorage.getItem('admin_password');
@@ -68,6 +103,9 @@ function Admin() {
       localStorage.setItem('admin_password', password);
       setStats(response.data);
       loadFanfics();
+      loadReviews();
+      loadPosts();
+      loadLibraryItems();
     } catch (error) {
       setError('Contraseña incorrecta');
     } finally {
@@ -106,6 +144,151 @@ function Admin() {
       setFanfics(response.data);
     } catch (error) {
       setError('Error cargando fanfics');
+    }
+  };
+
+  // Funciones para cargar nuevo contenido
+  const loadReviews = async () => {
+    try {
+      const response = await axios.get('/api/admin/reviews', {
+        headers: { password }
+      });
+      setReviews(response.data);
+    } catch (error) {
+      console.error('Error cargando reseñas:', error);
+    }
+  };
+
+  const loadPosts = async () => {
+    try {
+      const response = await axios.get('/api/admin/posts', {
+        headers: { password }
+      });
+      setPosts(response.data);
+    } catch (error) {
+      console.error('Error cargando posts:', error);
+    }
+  };
+
+  const loadLibraryItems = async () => {
+    try {
+      const response = await axios.get('/api/admin/library', {
+        headers: { password }
+      });
+      setLibraryItems(response.data);
+    } catch (error) {
+      console.error('Error cargando biblioteca:', error);
+    }
+  };
+
+  // Funciones para crear nuevo contenido
+  const handleCreateReview = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const reviewData = {
+        ...reviewForm,
+        tags: reviewForm.tags.split(',').map(tag => tag.trim()),
+        date: new Date().toLocaleDateString('es-ES', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        readTime: `${Math.ceil(reviewForm.summary.length / 200)} min read`
+      };
+
+      await axios.post('/api/admin/reviews', reviewData, {
+        headers: { password }
+      });
+
+      setSuccess('Reseña creada exitosamente');
+      setReviewForm({
+        title: '',
+        summary: '',
+        category: 'Books',
+        rating: 5,
+        tags: '',
+        image: 'book'
+      });
+      loadReviews();
+    } catch (error) {
+      setError('Error creando reseña');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreatePost = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const postData = {
+        ...postForm,
+        tags: postForm.tags.split(',').map(tag => tag.trim()),
+        date: new Date().toLocaleDateString('es-ES', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        readTime: `${Math.ceil(postForm.summary.length / 200)} min read`
+      };
+
+      await axios.post('/api/admin/posts', postData, {
+        headers: { password }
+      });
+
+      setSuccess('Post creado exitosamente');
+      setPostForm({
+        title: '',
+        summary: '',
+        category: 'Personal',
+        tags: '',
+        image: 'heart'
+      });
+      loadPosts();
+    } catch (error) {
+      setError('Error creando post');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateLibraryItem = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const itemData = {
+        ...libraryForm,
+        tags: libraryForm.tags.split(',').map(tag => tag.trim())
+      };
+
+      await axios.post('/api/admin/library', itemData, {
+        headers: { password }
+      });
+
+      setSuccess('Item de biblioteca creado exitosamente');
+      setLibraryForm({
+        title: '',
+        author: '',
+        type: 'Book',
+        genre: '',
+        rating: 5,
+        status: 'Completed',
+        year: '',
+        description: '',
+        tags: ''
+      });
+      loadLibraryItems();
+    } catch (error) {
+      setError('Error creando item de biblioteca');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -310,7 +493,7 @@ function Admin() {
 
         {/* Tabs de administración */}
         <Tabs defaultActiveKey="upload" className="mb-4">
-          <Tab eventKey="upload" title="Subir Fanfics">
+          <Tab eventKey="upload" title="Fanfics">
             <Row>
               <Col md={6}>
                 <Card className="admin-card">
@@ -528,6 +711,400 @@ function Admin() {
                 </div>
               </Card.Body>
             </Card>
+          </Tab>
+
+          {/* Nueva pestaña para Reseñas */}
+          <Tab eventKey="reviews" title="Reseñas">
+            <Row>
+              <Col md={6}>
+                <Card className="admin-card">
+                  <Card.Header>
+                    <h5>
+                      <i className="bi bi-star me-2"></i>
+                      Crear Nueva Reseña
+                    </h5>
+                  </Card.Header>
+                  <Card.Body>
+                    <Form onSubmit={handleCreateReview}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Título</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={reviewForm.title}
+                          onChange={(e) => setReviewForm({...reviewForm, title: e.target.value})}
+                          required
+                        />
+                      </Form.Group>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Resumen</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={4}
+                          value={reviewForm.summary}
+                          onChange={(e) => setReviewForm({...reviewForm, summary: e.target.value})}
+                          required
+                        />
+                      </Form.Group>
+                      
+                      <Row>
+                        <Col md={6}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>Categoría</Form.Label>
+                            <Form.Select
+                              value={reviewForm.category}
+                              onChange={(e) => setReviewForm({...reviewForm, category: e.target.value})}
+                            >
+                              <option value="Books">Books</option>
+                              <option value="Fanfics">Fanfics</option>
+                              <option value="Series">Series</option>
+                            </Form.Select>
+                          </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>Rating</Form.Label>
+                            <Form.Select
+                              value={reviewForm.rating}
+                              onChange={(e) => setReviewForm({...reviewForm, rating: parseInt(e.target.value)})}
+                            >
+                              <option value={1}>1 estrella</option>
+                              <option value={2}>2 estrellas</option>
+                              <option value={3}>3 estrellas</option>
+                              <option value={4}>4 estrellas</option>
+                              <option value={5}>5 estrellas</option>
+                            </Form.Select>
+                          </Form.Group>
+                        </Col>
+                      </Row>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Etiquetas (separadas por comas)</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={reviewForm.tags}
+                          onChange={(e) => setReviewForm({...reviewForm, tags: e.target.value})}
+                          placeholder="Fantasy, Romance, Adventure"
+                        />
+                      </Form.Group>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Icono</Form.Label>
+                        <Form.Select
+                          value={reviewForm.image}
+                          onChange={(e) => setReviewForm({...reviewForm, image: e.target.value})}
+                        >
+                          <option value="book">Libro</option>
+                          <option value="heart">Corazón</option>
+                          <option value="star">Estrella</option>
+                          <option value="robot">Robot</option>
+                        </Form.Select>
+                      </Form.Group>
+                      
+                      <Button type="submit" variant="primary" disabled={loading}>
+                        {loading ? <Spinner size="sm" /> : 'Crear Reseña'}
+                      </Button>
+                    </Form>
+                  </Card.Body>
+                </Card>
+              </Col>
+              
+              <Col md={6}>
+                <Card className="admin-card">
+                  <Card.Header>
+                    <h5>
+                      <i className="bi bi-list me-2"></i>
+                      Reseñas Existentes ({reviews.length})
+                    </h5>
+                  </Card.Header>
+                  <Card.Body>
+                    <div style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {reviews.map((review) => (
+                        <div key={review.id} className="mb-3 p-3 border rounded">
+                          <h6>{review.title}</h6>
+                          <p className="text-muted small">{review.summary}</p>
+                          <Badge bg="secondary">{review.category}</Badge>
+                          <span className="ms-2">
+                            {Array.from({length: review.rating}).map((_, i) => (
+                              <i key={i} className="bi bi-star-fill text-warning"></i>
+                            ))}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          </Tab>
+
+          {/* Nueva pestaña para Posts de Blog */}
+          <Tab eventKey="posts" title="Posts de Blog">
+            <Row>
+              <Col md={6}>
+                <Card className="admin-card">
+                  <Card.Header>
+                    <h5>
+                      <i className="bi bi-pencil me-2"></i>
+                      Crear Nuevo Post
+                    </h5>
+                  </Card.Header>
+                  <Card.Body>
+                    <Form onSubmit={handleCreatePost}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Título</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={postForm.title}
+                          onChange={(e) => setPostForm({...postForm, title: e.target.value})}
+                          required
+                        />
+                      </Form.Group>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Resumen</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={4}
+                          value={postForm.summary}
+                          onChange={(e) => setPostForm({...postForm, summary: e.target.value})}
+                          required
+                        />
+                      </Form.Group>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Categoría</Form.Label>
+                        <Form.Select
+                          value={postForm.category}
+                          onChange={(e) => setPostForm({...postForm, category: e.target.value})}
+                        >
+                          <option value="Personal">Personal</option>
+                          <option value="Lifestyle">Lifestyle</option>
+                          <option value="Technology">Technology</option>
+                          <option value="Reflection">Reflection</option>
+                        </Form.Select>
+                      </Form.Group>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Etiquetas (separadas por comas)</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={postForm.tags}
+                          onChange={(e) => setPostForm({...postForm, tags: e.target.value})}
+                          placeholder="Reading, Personal, Tips"
+                        />
+                      </Form.Group>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Icono</Form.Label>
+                        <Form.Select
+                          value={postForm.image}
+                          onChange={(e) => setPostForm({...postForm, image: e.target.value})}
+                        >
+                          <option value="heart">Corazón</option>
+                          <option value="book">Libro</option>
+                          <option value="star">Estrella</option>
+                          <option value="robot">Robot</option>
+                          <option value="coffee">Café</option>
+                          <option value="lightbulb">Bombilla</option>
+                        </Form.Select>
+                      </Form.Group>
+                      
+                      <Button type="submit" variant="primary" disabled={loading}>
+                        {loading ? <Spinner size="sm" /> : 'Crear Post'}
+                      </Button>
+                    </Form>
+                  </Card.Body>
+                </Card>
+              </Col>
+              
+              <Col md={6}>
+                <Card className="admin-card">
+                  <Card.Header>
+                    <h5>
+                      <i className="bi bi-list me-2"></i>
+                      Posts Existentes ({posts.length})
+                    </h5>
+                  </Card.Header>
+                  <Card.Body>
+                    <div style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {posts.map((post) => (
+                        <div key={post.id} className="mb-3 p-3 border rounded">
+                          <h6>{post.title}</h6>
+                          <p className="text-muted small">{post.summary}</p>
+                          <Badge bg="info">{post.category}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          </Tab>
+
+          {/* Nueva pestaña para Biblioteca */}
+          <Tab eventKey="library" title="Biblioteca">
+            <Row>
+              <Col md={6}>
+                <Card className="admin-card">
+                  <Card.Header>
+                    <h5>
+                      <i className="bi bi-book me-2"></i>
+                      Agregar a Biblioteca
+                    </h5>
+                  </Card.Header>
+                  <Card.Body>
+                    <Form onSubmit={handleCreateLibraryItem}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Título</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={libraryForm.title}
+                          onChange={(e) => setLibraryForm({...libraryForm, title: e.target.value})}
+                          required
+                        />
+                      </Form.Group>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Autor</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={libraryForm.author}
+                          onChange={(e) => setLibraryForm({...libraryForm, author: e.target.value})}
+                          required
+                        />
+                      </Form.Group>
+                      
+                      <Row>
+                        <Col md={6}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>Tipo</Form.Label>
+                            <Form.Select
+                              value={libraryForm.type}
+                              onChange={(e) => setLibraryForm({...libraryForm, type: e.target.value})}
+                            >
+                              <option value="Book">Libro</option>
+                              <option value="Fanfic">Fanfic</option>
+                              <option value="Series">Serie</option>
+                            </Form.Select>
+                          </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>Género</Form.Label>
+                            <Form.Control
+                              type="text"
+                              value={libraryForm.genre}
+                              onChange={(e) => setLibraryForm({...libraryForm, genre: e.target.value})}
+                              placeholder="Fantasy, Romance, etc."
+                            />
+                          </Form.Group>
+                        </Col>
+                      </Row>
+                      
+                      <Row>
+                        <Col md={4}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>Rating</Form.Label>
+                            <Form.Select
+                              value={libraryForm.rating}
+                              onChange={(e) => setLibraryForm({...libraryForm, rating: parseInt(e.target.value)})}
+                            >
+                              <option value={1}>1 estrella</option>
+                              <option value={2}>2 estrellas</option>
+                              <option value={3}>3 estrellas</option>
+                              <option value={4}>4 estrellas</option>
+                              <option value={5}>5 estrellas</option>
+                            </Form.Select>
+                          </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>Estado</Form.Label>
+                            <Form.Select
+                              value={libraryForm.status}
+                              onChange={(e) => setLibraryForm({...libraryForm, status: e.target.value})}
+                            >
+                              <option value="Completed">Completado</option>
+                              <option value="Reading">Leyendo</option>
+                              <option value="Want to Read">Quiero leer</option>
+                            </Form.Select>
+                          </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>Año</Form.Label>
+                            <Form.Control
+                              type="text"
+                              value={libraryForm.year}
+                              onChange={(e) => setLibraryForm({...libraryForm, year: e.target.value})}
+                              placeholder="2023"
+                            />
+                          </Form.Group>
+                        </Col>
+                      </Row>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Descripción</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={3}
+                          value={libraryForm.description}
+                          onChange={(e) => setLibraryForm({...libraryForm, description: e.target.value})}
+                        />
+                      </Form.Group>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Etiquetas (separadas por comas)</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={libraryForm.tags}
+                          onChange={(e) => setLibraryForm({...libraryForm, tags: e.target.value})}
+                          placeholder="Magic, School, Friendship"
+                        />
+                      </Form.Group>
+                      
+                      <Button type="submit" variant="primary" disabled={loading}>
+                        {loading ? <Spinner size="sm" /> : 'Agregar a Biblioteca'}
+                      </Button>
+                    </Form>
+                  </Card.Body>
+                </Card>
+              </Col>
+              
+              <Col md={6}>
+                <Card className="admin-card">
+                  <Card.Header>
+                    <h5>
+                      <i className="bi bi-list me-2"></i>
+                      Biblioteca ({libraryItems.length})
+                    </h5>
+                  </Card.Header>
+                  <Card.Body>
+                    <div style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {libraryItems.map((item) => (
+                        <div key={item.id} className="mb-3 p-3 border rounded">
+                          <h6>{item.title}</h6>
+                          <p className="text-muted small">por {item.author}</p>
+                          <div className="d-flex gap-2">
+                            <Badge bg="primary">{item.type}</Badge>
+                            <Badge bg="secondary">{item.genre}</Badge>
+                            <Badge bg={item.status === 'Completed' ? 'success' : 'warning'}>
+                              {item.status}
+                            </Badge>
+                            <span>
+                              {Array.from({length: item.rating}).map((_, i) => (
+                                <i key={i} className="bi bi-star-fill text-warning"></i>
+                              ))}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
           </Tab>
         </Tabs>
       </Container>

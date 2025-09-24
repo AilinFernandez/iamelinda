@@ -2,6 +2,9 @@ const { db } = require('../config/firebase');
 const { v4: uuidv4 } = require('uuid');
 
 const COLLECTION_NAME = 'fanfics';
+const REVIEWS_COLLECTION = 'reviews';
+const POSTS_COLLECTION = 'posts';
+const LIBRARY_COLLECTION = 'library';
 
 /**
  * Buscar fanfics basado en criterios de búsqueda
@@ -341,6 +344,222 @@ async function getStats() {
   }
 }
 
+// ==================== GESTIÓN DE RESEÑAS ====================
+
+/**
+ * Obtener todas las reseñas
+ */
+async function getReviews() {
+  try {
+    const snapshot = await db.collection(REVIEWS_COLLECTION)
+      .orderBy('createdAt', 'desc')
+      .get();
+    
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error obteniendo reseñas:', error);
+    throw error;
+  }
+}
+
+/**
+ * Crear nueva reseña
+ */
+async function createReview(reviewData) {
+  try {
+    const id = uuidv4();
+    const review = {
+      id,
+      ...reviewData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    await db.collection(REVIEWS_COLLECTION).doc(id).set(review);
+    return review;
+  } catch (error) {
+    console.error('Error creando reseña:', error);
+    throw error;
+  }
+}
+
+/**
+ * Actualizar reseña
+ */
+async function updateReview(id, updateData) {
+  try {
+    const review = {
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    await db.collection(REVIEWS_COLLECTION).doc(id).update(review);
+    return { id, ...review };
+  } catch (error) {
+    console.error('Error actualizando reseña:', error);
+    throw error;
+  }
+}
+
+/**
+ * Eliminar reseña
+ */
+async function deleteReview(id) {
+  try {
+    await db.collection(REVIEWS_COLLECTION).doc(id).delete();
+  } catch (error) {
+    console.error('Error eliminando reseña:', error);
+    throw error;
+  }
+}
+
+// ==================== GESTIÓN DE POSTS DE BLOG ====================
+
+/**
+ * Obtener todos los posts
+ */
+async function getPosts() {
+  try {
+    const snapshot = await db.collection(POSTS_COLLECTION)
+      .orderBy('createdAt', 'desc')
+      .get();
+    
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error obteniendo posts:', error);
+    throw error;
+  }
+}
+
+/**
+ * Crear nuevo post
+ */
+async function createPost(postData) {
+  try {
+    const id = uuidv4();
+    const post = {
+      id,
+      ...postData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    await db.collection(POSTS_COLLECTION).doc(id).set(post);
+    return post;
+  } catch (error) {
+    console.error('Error creando post:', error);
+    throw error;
+  }
+}
+
+/**
+ * Actualizar post
+ */
+async function updatePost(id, updateData) {
+  try {
+    const post = {
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    await db.collection(POSTS_COLLECTION).doc(id).update(post);
+    return { id, ...post };
+  } catch (error) {
+    console.error('Error actualizando post:', error);
+    throw error;
+  }
+}
+
+/**
+ * Eliminar post
+ */
+async function deletePost(id) {
+  try {
+    await db.collection(POSTS_COLLECTION).doc(id).delete();
+  } catch (error) {
+    console.error('Error eliminando post:', error);
+    throw error;
+  }
+}
+
+// ==================== GESTIÓN DE BIBLIOTECA ====================
+
+/**
+ * Obtener todos los items de biblioteca
+ */
+async function getLibraryItems() {
+  try {
+    const snapshot = await db.collection(LIBRARY_COLLECTION)
+      .orderBy('createdAt', 'desc')
+      .get();
+    
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error obteniendo items de biblioteca:', error);
+    throw error;
+  }
+}
+
+/**
+ * Crear nuevo item de biblioteca
+ */
+async function createLibraryItem(itemData) {
+  try {
+    const id = uuidv4();
+    const item = {
+      id,
+      ...itemData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    await db.collection(LIBRARY_COLLECTION).doc(id).set(item);
+    return item;
+  } catch (error) {
+    console.error('Error creando item de biblioteca:', error);
+    throw error;
+  }
+}
+
+/**
+ * Actualizar item de biblioteca
+ */
+async function updateLibraryItem(id, updateData) {
+  try {
+    const item = {
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    await db.collection(LIBRARY_COLLECTION).doc(id).update(item);
+    return { id, ...item };
+  } catch (error) {
+    console.error('Error actualizando item de biblioteca:', error);
+    throw error;
+  }
+}
+
+/**
+ * Eliminar item de biblioteca
+ */
+async function deleteLibraryItem(id) {
+  try {
+    await db.collection(LIBRARY_COLLECTION).doc(id).delete();
+  } catch (error) {
+    console.error('Error eliminando item de biblioteca:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   searchFanfics,
   getAllFanfics,
@@ -349,5 +568,20 @@ module.exports = {
   checkDuplicateByUrl,
   updateFanfic,
   deleteFanfic,
-  getStats
+  getStats,
+  // Reseñas
+  getReviews,
+  createReview,
+  updateReview,
+  deleteReview,
+  // Posts
+  getPosts,
+  createPost,
+  updatePost,
+  deletePost,
+  // Biblioteca
+  getLibraryItems,
+  createLibraryItem,
+  updateLibraryItem,
+  deleteLibraryItem
 };

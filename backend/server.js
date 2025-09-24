@@ -299,6 +299,132 @@ app.use((req, res) => {
   });
 });
 
+// ==================== GESTIÓN DE RESEÑAS ====================
+
+// Obtener todas las reseñas
+app.get('/api/admin/reviews', requireAdmin, async (req, res) => {
+  try {
+    const reviews = await fanficService.getReviews();
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener reseñas' });
+  }
+});
+
+// Crear nueva reseña
+app.post('/api/admin/reviews', requireAdmin, async (req, res) => {
+  try {
+    const review = await fanficService.createReview(req.body);
+    res.json(review);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear reseña' });
+  }
+});
+
+// Actualizar reseña
+app.put('/api/admin/reviews/:id', requireAdmin, async (req, res) => {
+  try {
+    const review = await fanficService.updateReview(req.params.id, req.body);
+    res.json(review);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar reseña' });
+  }
+});
+
+// Eliminar reseña
+app.delete('/api/admin/reviews/:id', requireAdmin, async (req, res) => {
+  try {
+    await fanficService.deleteReview(req.params.id);
+    res.json({ message: 'Reseña eliminada correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar reseña' });
+  }
+});
+
+// ==================== GESTIÓN DE POSTS DE BLOG ====================
+
+// Obtener todos los posts
+app.get('/api/admin/posts', requireAdmin, async (req, res) => {
+  try {
+    const posts = await fanficService.getPosts();
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener posts' });
+  }
+});
+
+// Crear nuevo post
+app.post('/api/admin/posts', requireAdmin, async (req, res) => {
+  try {
+    const post = await fanficService.createPost(req.body);
+    res.json(post);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear post' });
+  }
+});
+
+// Actualizar post
+app.put('/api/admin/posts/:id', requireAdmin, async (req, res) => {
+  try {
+    const post = await fanficService.updatePost(req.params.id, req.body);
+    res.json(post);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar post' });
+  }
+});
+
+// Eliminar post
+app.delete('/api/admin/posts/:id', requireAdmin, async (req, res) => {
+  try {
+    await fanficService.deletePost(req.params.id);
+    res.json({ message: 'Post eliminado correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar post' });
+  }
+});
+
+// ==================== GESTIÓN DE BIBLIOTECA ====================
+
+// Obtener todos los items de biblioteca
+app.get('/api/admin/library', requireAdmin, async (req, res) => {
+  try {
+    const items = await fanficService.getLibraryItems();
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener items de biblioteca' });
+  }
+});
+
+// Crear nuevo item de biblioteca
+app.post('/api/admin/library', requireAdmin, async (req, res) => {
+  try {
+    const item = await fanficService.createLibraryItem(req.body);
+    res.json(item);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear item de biblioteca' });
+  }
+});
+
+// Actualizar item de biblioteca
+app.put('/api/admin/library/:id', requireAdmin, async (req, res) => {
+  try {
+    const item = await fanficService.updateLibraryItem(req.params.id, req.body);
+    res.json(item);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar item de biblioteca' });
+  }
+});
+
+// Eliminar item de biblioteca
+app.delete('/api/admin/library/:id', requireAdmin, async (req, res) => {
+  try {
+    await fanficService.deleteLibraryItem(req.params.id);
+    res.json({ message: 'Item de biblioteca eliminado correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar item de biblioteca' });
+  }
+});
+
 // Manejador de errores global
 app.use((error, req, res, next) => {
   console.error('Error no manejado:', error);
