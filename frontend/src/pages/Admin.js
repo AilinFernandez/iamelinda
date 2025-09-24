@@ -15,6 +15,7 @@ import {
   Tab
 } from 'react-bootstrap';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
 function Admin() {
   const [password, setPassword] = useState('');
@@ -95,7 +96,7 @@ function Admin() {
 
     try {
       // Probar acceso con la contraseña
-      const response = await axios.get('/api/admin/stats', {
+      const response = await axios.get(`${API_BASE_URL}/api/admin/stats`, {
         headers: { password }
       });
 
@@ -124,8 +125,8 @@ function Admin() {
   const loadAdminData = async (adminPassword) => {
     try {
       const [statsRes, fanficsRes] = await Promise.all([
-        axios.get('/api/admin/stats', { headers: { password: adminPassword } }),
-        axios.get('/api/admin/fanfics', { headers: { password: adminPassword } })
+        axios.get(`${API_BASE_URL}/api/admin/stats`, { headers: { password: adminPassword } }),
+        axios.get(`${API_BASE_URL}/api/admin/fanfics`, { headers: { password: adminPassword } })
       ]);
       
       setStats(statsRes.data);
@@ -138,7 +139,7 @@ function Admin() {
 
   const loadFanfics = async () => {
     try {
-      const response = await axios.get('/api/admin/fanfics', {
+      const response = await axios.get(`${API_BASE_URL}/api/admin/fanfics`, {
         headers: { password }
       });
       setFanfics(response.data);
@@ -150,7 +151,7 @@ function Admin() {
   // Funciones para cargar nuevo contenido
   const loadReviews = async () => {
     try {
-      const response = await axios.get('/api/admin/reviews', {
+      const response = await axios.get(`${API_BASE_URL}/api/admin/reviews`, {
         headers: { password }
       });
       setReviews(response.data);
@@ -161,7 +162,7 @@ function Admin() {
 
   const loadPosts = async () => {
     try {
-      const response = await axios.get('/api/admin/posts', {
+      const response = await axios.get(`${API_BASE_URL}/api/admin/posts`, {
         headers: { password }
       });
       setPosts(response.data);
@@ -172,7 +173,7 @@ function Admin() {
 
   const loadLibraryItems = async () => {
     try {
-      const response = await axios.get('/api/admin/library', {
+      const response = await axios.get(`${API_BASE_URL}/api/admin/library`, {
         headers: { password }
       });
       setLibraryItems(response.data);
@@ -199,7 +200,7 @@ function Admin() {
         readTime: `${Math.ceil(reviewForm.summary.length / 200)} min read`
       };
 
-      await axios.post('/api/admin/reviews', reviewData, {
+      await axios.post(`${API_BASE_URL}/api/admin/reviews`, reviewData, {
         headers: { password }
       });
 
@@ -237,7 +238,7 @@ function Admin() {
         readTime: `${Math.ceil(postForm.summary.length / 200)} min read`
       };
 
-      await axios.post('/api/admin/posts', postData, {
+      await axios.post(`${API_BASE_URL}/api/admin/posts`, postData, {
         headers: { password }
       });
 
@@ -268,7 +269,7 @@ function Admin() {
         tags: libraryForm.tags.split(',').map(tag => tag.trim())
       };
 
-      await axios.post('/api/admin/library', itemData, {
+      await axios.post(`${API_BASE_URL}/api/admin/library`, itemData, {
         headers: { password }
       });
 
@@ -306,7 +307,7 @@ function Admin() {
     formData.append('updateDuplicates', duplicateOptions.updateDuplicates);
 
     try {
-      const response = await axios.post('/api/admin/upload-csv', formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/upload-csv`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           password
@@ -343,7 +344,7 @@ function Admin() {
         etiquetas: manualForm.etiquetas.split(',').map(tag => tag.trim()).filter(tag => tag)
       };
 
-      await axios.post('/api/admin/fanfics', fanficData, {
+      await axios.post(`${API_BASE_URL}/api/admin/fanfics`, fanficData, {
         headers: { password }
       });
 
