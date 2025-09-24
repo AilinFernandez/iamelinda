@@ -1,169 +1,224 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Row, Col, Card, Button, Form } from 'react-bootstrap';
+import Layout from '../components/Layout';
 
 function Home() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate();
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
-  const handleExampleClick = (example) => {
-    setSearchQuery(example);
-  };
-
-  const examples = [
-    "fanfics de Harry Potter donde los padres estén vivos",
-    "historias románticas de Marvel con Iron Man",
-    "fanfics completos de Percy Jackson",
-    "Twilight desde la perspectiva de otros personajes",
-    "crossovers de Avatar con otros universos"
-  ];
-
   return (
-    <>
+    <Layout>
       {/* Hero Section */}
-      <section className="hero-section">
-        <Container>
-          <Row className="justify-content-center">
-            <Col lg={8} className="text-center">
-              <h1 className="display-4 fw-bold mb-4">
-                <i className="bi bi-book me-3"></i>
-                iamelinda
+      <div className="hero-section">
+        <Row className="align-items-center">
+          <Col lg={6}>
+            <div className="hero-content">
+              <h1 className="hero-title">
+                Hey, I'm <span className="hero-name">Melinda</span> 👋
               </h1>
-              <p className="lead mb-5">
-                Descubre fanfics increíbles con la ayuda de inteligencia artificial.
-                Busca historias usando lenguaje natural y encuentra exactamente lo que buscas.
+              <p className="hero-description">
+                I'm a <strong>story enthusiast</strong> and <strong>fanfic curator</strong> 
+                who loves discovering amazing stories. Welcome to <strong>Melinda's Corner</strong> 
+                where I share my favorite recommendations and tools to help you find 
+                your next perfect read.
               </p>
               
-              <div className="search-box">
-                <Form onSubmit={handleSearch}>
-                  <Row className="g-3">
-                    <Col md={9}>
-                      <Form.Control
-                        type="text"
-                        size="lg"
-                        placeholder="Ej: fanfics de Harry Potter donde los padres estén vivos..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border-0"
-                        style={{ 
-                          background: 'rgba(255,255,255,0.9)', 
-                          backdropFilter: 'blur(10px)' 
-                        }}
-                      />
-                    </Col>
-                    <Col md={3}>
-                      <Button 
-                        type="submit" 
-                        size="lg" 
-                        className="w-100 btn-gradient"
-                        disabled={!searchQuery.trim()}
-                      >
-                        <i className="bi bi-search me-2"></i>
-                        Buscar
-                      </Button>
-                    </Col>
-                  </Row>
-                </Form>
+              {/* Let's connect section */}
+              <div className="connect-section">
+                <h6 className="connect-title">Let's connect</h6>
+                <div className="connect-form">
+                  <Form.Control 
+                    type="email" 
+                    placeholder="Enter your email address"
+                    className="connect-input"
+                  />
+                  <Button className="connect-btn">Get Started</Button>
+                </div>
               </div>
-            </Col>
-          </Row>
-        </Container>
-      </section>
-
-      {/* Examples Section */}
-      <Container className="py-5">
-        <Row className="justify-content-center">
-          <Col lg={8}>
-            <h3 className="text-center mb-4">
-              <i className="bi bi-lightbulb me-2"></i>
-              Ejemplos de búsqueda
-            </h3>
-            <p className="text-center text-muted mb-4">
-              Prueba con estas búsquedas para ver cómo funciona la IA:
-            </p>
-            
-            <div className="d-flex flex-wrap justify-content-center gap-2">
-              {examples.map((example, index) => (
-                <Button
-                  key={index}
-                  variant="outline-primary"
-                  size="sm"
-                  className="suggestion-chip mb-2"
-                  onClick={() => handleExampleClick(example)}
-                >
-                  {example}
-                </Button>
-              ))}
+            </div>
+          </Col>
+          <Col lg={6}>
+            <div className="hero-illustration">
+              <div className="illustration-placeholder">
+                <i className="fas fa-book-open"></i>
+                <p>Illustration coming soon</p>
+              </div>
             </div>
           </Col>
         </Row>
-      </Container>
+      </div>
 
-      {/* Features Section */}
-      <Container className="py-5">
-        <Row>
-          <Col md={4} className="text-center mb-4">
-            <div className="mb-3">
-              <i className="bi bi-robot" style={{ fontSize: '3rem', color: '#667eea' }}></i>
+      {/* Trending Topics Section */}
+      <div className="trending-section">
+        <h5 className="trending-title">
+          <i className="fas fa-bolt"></i>
+          Trending Topics
+        </h5>
+        <Card className="trending-card">
+          <Card.Body>
+            <div className="trending-categories">
+              <div className="category-item">
+                <div className="category-circle lifestyle">
+                  <i className="fas fa-heart"></i>
+                  <div className="category-badge">5</div>
+                </div>
+                <span className="category-name">Lifestyle</span>
+              </div>
+              <div className="category-item">
+                <div className="category-circle inspiration">
+                  <i className="fas fa-star"></i>
+                  <div className="category-badge">7</div>
+                </div>
+                <span className="category-name">Inspiration</span>
+              </div>
+              <div className="category-item">
+                <div className="category-circle technology">
+                  <i className="fas fa-robot"></i>
+                  <div className="category-badge">4</div>
+                </div>
+                <span className="category-name">Technology</span>
+              </div>
+              <div className="category-item">
+                <div className="category-circle music">
+                  <i className="fas fa-music"></i>
+                  <div className="category-badge">3</div>
+                </div>
+                <span className="category-name">Music</span>
+              </div>
+              <div className="category-item">
+                <div className="category-circle travel">
+                  <i className="fas fa-plane"></i>
+                  <div className="category-badge">3</div>
+                </div>
+                <span className="category-name">Travel</span>
+              </div>
+              <Button className="explore-btn">Explore All</Button>
             </div>
-            <h5>Búsqueda Inteligente</h5>
-            <p className="text-muted">
-              Usa lenguaje natural para describir exactamente lo que quieres encontrar.
-              La IA entiende contexto y matices.
-            </p>
+          </Card.Body>
+        </Card>
+      </div>
+
+      {/* Recent Posts Grid */}
+      <div className="posts-section">
+        <h5 className="posts-title">Latest Posts</h5>
+        <Row className="g-4">
+          <Col md={6} lg={4}>
+            <Card className="post-card">
+              <div className="post-image">
+                <div className="image-placeholder">
+                  <i className="fas fa-book"></i>
+                </div>
+                <div className="post-category inspiration">Inspiration</div>
+              </div>
+              <Card.Body>
+                <div className="post-meta">
+                  <span className="post-date">September 26, 2025</span>
+                  <span className="post-read-time">
+                    <i className="fas fa-clock"></i> 1 Min Read
+                  </span>
+                  <span className="post-rating">
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                  </span>
+                </div>
+                <h6 className="post-title">Mi reseña de Harry Potter</h6>
+                <p className="post-summary">
+                  Una reflexión personal sobre cómo esta serie cambió mi perspectiva 
+                  sobre la literatura juvenil y la magia de las historias.
+                </p>
+                <div className="post-tags">
+                  <span className="tag">Lifestyle</span>
+                  <span className="tag">Books</span>
+                </div>
+                <div className="post-author">
+                  <div className="author-avatar">
+                    <span>M</span>
+                  </div>
+                  <span className="author-name">Melinda</span>
+                </div>
+              </Card.Body>
+            </Card>
           </Col>
-          <Col md={4} className="text-center mb-4">
-            <div className="mb-3">
-              <i className="bi bi-collection" style={{ fontSize: '3rem', color: '#667eea' }}></i>
-            </div>
-            <h5>Base de Datos</h5>
-            <p className="text-muted">
-              Fanfics seleccionados de Archive of Our Own con metadatos detallados
-              y organizados por categorías.
-            </p>
+          <Col md={6} lg={4}>
+            <Card className="post-card">
+              <div className="post-image">
+                <div className="image-placeholder">
+                  <i className="fas fa-heart"></i>
+                </div>
+                <div className="post-category lifestyle">Lifestyle</div>
+              </div>
+              <Card.Body>
+                <div className="post-meta">
+                  <span className="post-date">September 25, 2025</span>
+                  <span className="post-read-time">
+                    <i className="fas fa-clock"></i> 2 Min Read
+                  </span>
+                  <span className="post-rating">
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                  </span>
+                </div>
+                <h6 className="post-title">Fanfics que me cambiaron la vida</h6>
+                <p className="post-summary">
+                  Una lista personal de las historias que más me impactaron y 
+                  por qué creo que todo el mundo debería leerlas.
+                </p>
+                <div className="post-tags">
+                  <span className="tag">Fanfics</span>
+                  <span className="tag">Personal</span>
+                </div>
+                <div className="post-author">
+                  <div className="author-avatar">
+                    <span>M</span>
+                  </div>
+                  <span className="author-name">Melinda</span>
+                </div>
+              </Card.Body>
+            </Card>
           </Col>
-          <Col md={4} className="text-center mb-4">
-            <div className="mb-3">
-              <i className="bi bi-lightning" style={{ fontSize: '3rem', color: '#667eea' }}></i>
-            </div>
-            <h5>Resultados Precisos</h5>
-            <p className="text-muted">
-              Obtén recomendaciones personalizadas con explicaciones de por qué
-              cada fanfic coincide con tu búsqueda.
-            </p>
+          <Col md={6} lg={4}>
+            <Card className="post-card">
+              <div className="post-image">
+                <div className="image-placeholder">
+                  <i className="fas fa-robot"></i>
+                </div>
+                <div className="post-category technology">Technology</div>
+              </div>
+              <Card.Body>
+                <div className="post-meta">
+                  <span className="post-date">September 24, 2025</span>
+                  <span className="post-read-time">
+                    <i className="fas fa-clock"></i> 3 Min Read
+                  </span>
+                  <span className="post-rating">
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                  </span>
+                </div>
+                <h6 className="post-title">Cómo funciona mi recomendador IA</h6>
+                <p className="post-summary">
+                  Una explicación técnica pero accesible sobre cómo la inteligencia 
+                  artificial puede ayudarte a encontrar tu próxima lectura perfecta.
+                </p>
+                <div className="post-tags">
+                  <span className="tag">Technology</span>
+                  <span className="tag">AI</span>
+                </div>
+                <div className="post-author">
+                  <div className="author-avatar">
+                    <span>M</span>
+                  </div>
+                  <span className="author-name">Melinda</span>
+                </div>
+              </Card.Body>
+            </Card>
           </Col>
         </Row>
-      </Container>
-
-      {/* CTA Section */}
-      <section style={{ background: '#f8f9fa' }} className="py-5">
-        <Container>
-          <Row className="justify-content-center text-center">
-            <Col lg={6}>
-              <h3 className="mb-3">¿Listo para encontrar tu próxima lectura favorita?</h3>
-              <p className="text-muted mb-4">
-                Comienza tu búsqueda ahora y descubre historias que no sabías que estabas buscando.
-              </p>
-              <Button 
-                size="lg" 
-                className="btn-gradient"
-                onClick={() => navigate('/search')}
-              >
-                <i className="bi bi-search me-2"></i>
-                Comenzar Búsqueda
-              </Button>
-            </Col>
-          </Row>
-        </Container>
-      </section>
-    </>
+      </div>
+    </Layout>
   );
 }
 

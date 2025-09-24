@@ -29,7 +29,7 @@ function Search() {
       setQuery(urlQuery);
       performSearch(urlQuery);
     }
-  }, [searchParams]);
+  }, [searchParams, query]);
 
   const performSearch = async (searchQuery = query) => {
     if (!searchQuery.trim()) return;
