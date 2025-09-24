@@ -13,6 +13,7 @@ import {
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import FanficCard from '../components/FanficCard';
+import API_BASE_URL from '../config/api';
 
 function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,7 +41,7 @@ function Search() {
     try {
       console.log('Buscando:', searchQuery);
       
-      const response = await axios.post('/api/search', {
+      const response = await axios.post(`${API_BASE_URL}/api/search`, {
         query: searchQuery.trim(),
         maxResults: 12
       });
