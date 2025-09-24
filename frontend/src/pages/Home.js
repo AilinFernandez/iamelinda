@@ -14,10 +14,9 @@ function Home() {
                 Hey, I'm <span className="hero-name">Melinda</span> 👋
               </h1>
               <p className="hero-description">
-                I'm a <strong>story enthusiast</strong> and <strong>fanfic curator</strong> 
-                who loves discovering amazing stories. Welcome to <strong>Melinda's Corner</strong> 
-                where I share my favorite recommendations and tools to help you find 
-                your next perfect read.
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod 
+                tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
+                quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
               </p>
               
               {/* Let's connect section */}
@@ -98,125 +97,11 @@ function Home() {
       {/* Recent Posts Grid */}
       <div className="posts-section">
         <h5 className="posts-title">Latest Posts</h5>
-        <Row className="g-4">
-          <Col md={6} lg={4}>
-            <Card className="post-card">
-              <div className="post-image">
-                <div className="image-placeholder">
-                  <i className="fas fa-book"></i>
-                </div>
-                <div className="post-category inspiration">Inspiration</div>
-              </div>
-              <Card.Body>
-                <div className="post-meta">
-                  <span className="post-date">September 26, 2025</span>
-                  <span className="post-read-time">
-                    <i className="fas fa-clock"></i> 1 Min Read
-                  </span>
-                  <span className="post-rating">
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                  </span>
-                </div>
-                <h6 className="post-title">Mi reseña de Harry Potter</h6>
-                <p className="post-summary">
-                  Una reflexión personal sobre cómo esta serie cambió mi perspectiva 
-                  sobre la literatura juvenil y la magia de las historias.
-                </p>
-                <div className="post-tags">
-                  <span className="tag">Lifestyle</span>
-                  <span className="tag">Books</span>
-                </div>
-                <div className="post-author">
-                  <div className="author-avatar">
-                    <span>M</span>
-                  </div>
-                  <span className="author-name">Melinda</span>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={6} lg={4}>
-            <Card className="post-card">
-              <div className="post-image">
-                <div className="image-placeholder">
-                  <i className="fas fa-heart"></i>
-                </div>
-                <div className="post-category lifestyle">Lifestyle</div>
-              </div>
-              <Card.Body>
-                <div className="post-meta">
-                  <span className="post-date">September 25, 2025</span>
-                  <span className="post-read-time">
-                    <i className="fas fa-clock"></i> 2 Min Read
-                  </span>
-                  <span className="post-rating">
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                  </span>
-                </div>
-                <h6 className="post-title">Fanfics que me cambiaron la vida</h6>
-                <p className="post-summary">
-                  Una lista personal de las historias que más me impactaron y 
-                  por qué creo que todo el mundo debería leerlas.
-                </p>
-                <div className="post-tags">
-                  <span className="tag">Fanfics</span>
-                  <span className="tag">Personal</span>
-                </div>
-                <div className="post-author">
-                  <div className="author-avatar">
-                    <span>M</span>
-                  </div>
-                  <span className="author-name">Melinda</span>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={6} lg={4}>
-            <Card className="post-card">
-              <div className="post-image">
-                <div className="image-placeholder">
-                  <i className="fas fa-robot"></i>
-                </div>
-                <div className="post-category technology">Technology</div>
-              </div>
-              <Card.Body>
-                <div className="post-meta">
-                  <span className="post-date">September 24, 2025</span>
-                  <span className="post-read-time">
-                    <i className="fas fa-clock"></i> 3 Min Read
-                  </span>
-                  <span className="post-rating">
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                  </span>
-                </div>
-                <h6 className="post-title">Cómo funciona mi recomendador IA</h6>
-                <p className="post-summary">
-                  Una explicación técnica pero accesible sobre cómo la inteligencia 
-                  artificial puede ayudarte a encontrar tu próxima lectura perfecta.
-                </p>
-                <div className="post-tags">
-                  <span className="tag">Technology</span>
-                  <span className="tag">AI</span>
-                </div>
-                <div className="post-author">
-                  <div className="author-avatar">
-                    <span>M</span>
-                  </div>
-                  <span className="author-name">Melinda</span>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        <div className="no-results">
+          <i className="fas fa-feather-alt"></i>
+          <h5>Próximamente</h5>
+          <p>Los posts estarán disponibles pronto. ¡Mantente atento!</p>
+        </div>
       </div>
     </Layout>
   );

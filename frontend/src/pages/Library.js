@@ -6,80 +6,7 @@ function Library() {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const libraryItems = [
-    {
-      id: 1,
-      title: "Harry Potter and the Philosopher's Stone",
-      author: "J.K. Rowling",
-      type: "Book",
-      genre: "Fantasy",
-      rating: 5,
-      status: "Completed",
-      year: "1997",
-      description: "The magical journey begins with Harry's first year at Hogwarts.",
-      tags: ["Magic", "School", "Friendship"]
-    },
-    {
-      id: 2,
-      title: "The Seven Husbands of Evelyn Hugo",
-      author: "Taylor Jenkins Reid",
-      type: "Book",
-      genre: "Drama",
-      rating: 5,
-      status: "Completed",
-      year: "2017",
-      description: "A captivating story about a reclusive Hollywood icon.",
-      tags: ["Hollywood", "Secrets", "Love"]
-    },
-    {
-      id: 3,
-      title: "All the Young Dudes",
-      author: "MsKingBean89",
-      type: "Fanfic",
-      genre: "Romance",
-      rating: 5,
-      status: "Completed",
-      year: "2017",
-      description: "A Marauders era fanfic that reimagines the Harry Potter universe.",
-      tags: ["Marauders", "Wolfstar", "Long"]
-    },
-    {
-      id: 4,
-      title: "The Song of Achilles",
-      author: "Madeline Miller",
-      type: "Book",
-      genre: "Historical Fiction",
-      rating: 5,
-      status: "Completed",
-      year: "2011",
-      description: "A retelling of the Iliad from Patroclus's perspective.",
-      tags: ["Greek Mythology", "Love", "Tragedy"]
-    },
-    {
-      id: 5,
-      title: "The Last of Us",
-      author: "Various",
-      type: "Fanfic",
-      genre: "Drama",
-      rating: 4,
-      status: "Reading",
-      year: "2023",
-      description: "Post-apocalyptic stories exploring Joel and Ellie's relationship.",
-      tags: ["Post-Apocalyptic", "Father-Daughter", "Survival"]
-    },
-    {
-      id: 6,
-      title: "Six of Crows",
-      author: "Leigh Bardugo",
-      type: "Book",
-      genre: "Fantasy",
-      rating: 4,
-      status: "Completed",
-      year: "2015",
-      description: "A heist story set in the Grishaverse.",
-      tags: ["Heist", "Magic", "Found Family"]
-    }
-  ];
+  const libraryItems = [];
 
   const filteredItems = libraryItems.filter(item => {
     const matchesFilter = filter === 'all' || item.type.toLowerCase() === filter;
@@ -186,9 +113,9 @@ function Library() {
 
         {filteredItems.length === 0 && (
           <div className="no-results">
-            <i className="fas fa-search"></i>
-            <h5>No se encontraron resultados</h5>
-            <p>Intenta con otros términos de búsqueda o filtros</p>
+            <i className="fas fa-book"></i>
+            <h5>Próximamente</h5>
+            <p>Mi biblioteca personal estará disponible pronto. ¡Mantente atento!</p>
           </div>
         )}
       </div>
