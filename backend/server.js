@@ -65,7 +65,7 @@ app.post('/api/search', async (req, res) => {
       return res.status(400).json({ error: 'Consulta de búsqueda requerida' });
     }
 
-    console.log(`🔍 Nueva búsqueda: "${query}"`);
+    console.log(`�� Nueva búsqueda: "${query}"`);
     const startTime = Date.now();
 
     // 1. Procesar consulta con IA
@@ -115,6 +115,122 @@ app.get('/api/stats', async (req, res) => {
   } catch (error) {
     console.error('Error obteniendo estadísticas:', error);
     res.status(500).json({ error: 'Error obteniendo estadísticas' });
+  }
+});
+
+// ==================== RUTAS PÚBLICAS PARA CONTENIDO ====================
+
+// Obtener reseñas públicas
+app.get('/api/reviews', async (req, res) => {
+  try {
+    const reviews = await fanficService.getReviews();
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener reseñas' });
+  }
+});
+
+// Obtener posts públicos
+app.get('/api/posts', async (req, res) => {
+  try {
+    const posts = await fanficService.getPosts();
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener posts' });
+  }
+});
+
+// Obtener biblioteca pública
+app.get('/api/library', async (req, res) => {
+  try {
+    const items = await fanficService.getLibraryItems();
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener biblioteca' });
+  }
+});
+
+// Obtener reseña por ID
+app.get('/api/reviews/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const review = await fanficService.getReviewById(id);
+    if (!review) {
+      return res.status(404).json({ error: 'Reseña no encontrada' });
+    }
+    res.json(review);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener reseña' });
+  }
+});
+
+// Obtener post por ID
+app.get('/api/posts/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const post = await fanficService.getPostById(id);
+    if (!post) {
+      return res.status(404).json({ error: 'Post no encontrado' });
+    }
+    res.json(post);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener post' });
+  }
+});
+
+// Obtener item de biblioteca por ID
+app.get('/api/library/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await fanficService.getLibraryItemById(id);
+    if (!item) {
+      return res.status(404).json({ error: 'Item de biblioteca no encontrado' });
+    }
+    res.json(item);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener item de biblioteca' });
+  }
+});
+
+// Obtener últimos items para el homepage
+app.get('/api/latest', async (req, res) => {
+  try {
+    const [reviews, posts, libraryItems] = await Promise.all([
+      fanficService.getReviews(),
+      fanficService.getPosts(),
+      fanficService.getLibraryItems()
+    ]);
+
+    // Obtener el más reciente de cada categoría (primer elemento ya que están ordenados por fecha desc)
+    const latestReview = reviews.length > 0 ? reviews[0] : null;
+    const latestPost = posts.length > 0 ? posts[0] : null;
+    const latestLibraryItem = libraryItems.length > 0 ? libraryItems[0] : null;
+
+    // Combinar todos los items y ordenar por fecha de creación
+    const allItems = [
+      ...reviews.map(item => ({ ...item, type: 'review' })),
+      ...posts.map(item => ({ ...item, type: 'post' })),
+      ...libraryItems.map(item => ({ ...item, type: 'library' }))
+    ].sort((a, b) => {
+      // Usar createdAt si está disponible, sino usar date
+      const dateA = a.createdAt ? new Date(a.createdAt) : new Date(a.date);
+      const dateB = b.createdAt ? new Date(b.createdAt) : new Date(b.date);
+      return dateB - dateA; // Más reciente primero
+    });
+
+    // Obtener los últimos 3 en general
+    const recentItems = allItems.slice(0, 3);
+
+    res.json({
+      latest: {
+        review: latestReview,
+        post: latestPost,
+        library: latestLibraryItem
+      },
+      recent: recentItems
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener últimos items' });
   }
 });
 
@@ -283,22 +399,6 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
   }
 });
 
-// ==================== MANEJO DE ERRORES ====================
-
-// Ruta no encontrada
-app.use((req, res) => {
-  res.status(404).json({ 
-    error: 'Ruta no encontrada',
-    availableEndpoints: [
-      'GET /',
-      'GET /health',
-      'POST /api/search',
-      'GET /api/stats',
-      'GET /api/admin/* (requiere autenticación)'
-    ]
-  });
-});
-
 // ==================== GESTIÓN DE RESEÑAS ====================
 
 // Obtener todas las reseñas
@@ -425,6 +525,22 @@ app.delete('/api/admin/library/:id', requireAdmin, async (req, res) => {
   }
 });
 
+// ==================== MANEJO DE ERRORES ====================
+
+// Ruta no encontrada
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: 'Ruta no encontrada',
+    availableEndpoints: [
+      'GET /',
+      'GET /health',
+      'POST /api/search',
+      'GET /api/stats',
+      'GET /api/admin/* (requiere autenticación)'
+    ]
+  });
+});
+
 // Manejador de errores global
 app.use((error, req, res, next) => {
   console.error('Error no manejado:', error);
@@ -436,8 +552,8 @@ app.use((error, req, res, next) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
-  console.log(`📍 API disponible en: http://localhost:${PORT}`);
+  console.log(`�� Servidor ejecutándose en puerto ${PORT}`);
+  console.log(`�� API disponible en: http://localhost:${PORT}`);
   console.log(`🔍 Búsqueda: POST http://localhost:${PORT}/api/search`);
   console.log(`👑 Admin: http://localhost:${PORT}/api/admin/*`);
   

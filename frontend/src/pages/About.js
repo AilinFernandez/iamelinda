@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Row, Col, Card, Badge } from 'react-bootstrap';
+import { Row, Col, Card, Badge } from 'react-bootstrap';
 import Layout from '../components/Layout';
 
 function About() {

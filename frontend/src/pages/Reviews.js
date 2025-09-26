@@ -1,10 +1,34 @@
-import React from 'react';
-import { Row, Col, Card, Badge, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Card, Badge, Button, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
+import API_BASE_URL from '../config/api';
 
 function Reviews() {
-  const reviews = [];
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    loadReviews();
+  }, []);
+
+  const loadReviews = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/reviews`);
+      if (!response.ok) {
+        throw new Error('Error al cargar reseñas');
+      }
+      const data = await response.json();
+      setReviews(data);
+    } catch (error) {
+      console.error('Error cargando reseñas:', error);
+      setError('Error al cargar las reseñas');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Layout>
@@ -28,7 +52,20 @@ function Reviews() {
 
         {/* Reviews Grid */}
         <Row className="g-4">
-          {reviews.length === 0 ? (
+          {loading ? (
+            <Col md={12}>
+              <div className="text-center">
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3">Cargando reseñas...</p>
+              </div>
+            </Col>
+          ) : error ? (
+            <Col md={12}>
+              <div className="alert alert-danger">
+                {error}
+              </div>
+            </Col>
+          ) : reviews.length === 0 ? (
             <Col md={12}>
               <div className="no-results">
                 <i className="fas fa-star"></i>
@@ -41,9 +78,17 @@ function Reviews() {
               <Col md={6} lg={4} key={review.id}>
                 <Card className="review-card">
                   <div className="review-image">
-                    <div className="image-placeholder">
-                      <i className={`fas fa-${review.image}`}></i>
-                    </div>
+                    {review.bannerImage ? (
+                      <img 
+                        src={review.bannerImage} 
+                        alt={review.title}
+                        className="review-banner-img"
+                      />
+                    ) : (
+                      <div className="image-placeholder">
+                        <i className={`fas fa-${review.image}`}></i>
+                      </div>
+                    )}
                     <div className="review-category">{review.category}</div>
                   </div>
                   <Card.Body>
@@ -66,7 +111,7 @@ function Reviews() {
                     </h5>
                     <p className="review-summary">{review.summary}</p>
                     <div className="review-tags">
-                      {review.tags.map((tag, index) => (
+                      {review.tags && Array.isArray(review.tags) && review.tags.map((tag, index) => (
                         <Badge key={index} className="review-tag">{tag}</Badge>
                       ))}
                     </div>

@@ -387,6 +387,22 @@ async function createReview(reviewData) {
 }
 
 /**
+ * Obtener reseña por ID
+ */
+async function getReviewById(id) {
+  try {
+    const reviewDoc = await db.collection(REVIEWS_COLLECTION).doc(id).get();
+    if (!reviewDoc.exists) {
+      return null;
+    }
+    return { id: reviewDoc.id, ...reviewDoc.data() };
+  } catch (error) {
+    console.error('Error obteniendo reseña por ID:', error);
+    throw error;
+  }
+}
+
+/**
  * Actualizar reseña
  */
 async function updateReview(id, updateData) {
@@ -454,6 +470,22 @@ async function createPost(postData) {
     return post;
   } catch (error) {
     console.error('Error creando post:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener post por ID
+ */
+async function getPostById(id) {
+  try {
+    const postDoc = await db.collection(POSTS_COLLECTION).doc(id).get();
+    if (!postDoc.exists) {
+      return null;
+    }
+    return { id: postDoc.id, ...postDoc.data() };
+  } catch (error) {
+    console.error('Error obteniendo post por ID:', error);
     throw error;
   }
 }
@@ -531,6 +563,22 @@ async function createLibraryItem(itemData) {
 }
 
 /**
+ * Obtener item de biblioteca por ID
+ */
+async function getLibraryItemById(id) {
+  try {
+    const itemDoc = await db.collection(LIBRARY_COLLECTION).doc(id).get();
+    if (!itemDoc.exists) {
+      return null;
+    }
+    return { id: itemDoc.id, ...itemDoc.data() };
+  } catch (error) {
+    console.error('Error obteniendo item de biblioteca por ID:', error);
+    throw error;
+  }
+}
+
+/**
  * Actualizar item de biblioteca
  */
 async function updateLibraryItem(id, updateData) {
@@ -571,16 +619,19 @@ module.exports = {
   getStats,
   // Reseñas
   getReviews,
+  getReviewById,
   createReview,
   updateReview,
   deleteReview,
   // Posts
   getPosts,
+  getPostById,
   createPost,
   updatePost,
   deletePost,
   // Biblioteca
   getLibraryItems,
+  getLibraryItemById,
   createLibraryItem,
   updateLibraryItem,
   deleteLibraryItem

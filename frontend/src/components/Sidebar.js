@@ -1,38 +1,50 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import API_BASE_URL from '../config/api';
 
 function Sidebar() {
+  const [recentPosts, setRecentPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadRecentPosts();
+  }, []);
+
+  const loadRecentPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/latest`);
+      if (response.ok) {
+        const data = await response.json();
+        setRecentPosts(data.recent || []);
+      }
+    } catch (error) {
+      console.error('Error cargando posts recientes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTypeIcon = (type) => {
+    const icons = {
+      'review': 'fas fa-star',
+      'post': 'fas fa-feather-alt',
+      'library': 'fas fa-book'
+    };
+    return icons[type] || 'fas fa-file';
+  };
+
+  const getTypeLink = (type, id) => {
+    const links = {
+      'review': `/reviews/${id}`,
+      'post': `/blog/${id}`,
+      'library': `/library/${id}`
+    };
+    return links[type] || '/';
+  };
   return (
     <div className="sidebar">
-      {/* About Me Card */}
-      <Card className="sidebar-card about-card">
-        <Card.Body>
-          <div className="about-avatar">
-            <div className="avatar-circle">
-              <span>M</span>
-            </div>
-          </div>
-          <h5 className="about-name">Melinda</h5>
-          <p className="about-title">Founder & Editor</p>
-          <p className="about-description">
-            Apasionada por las historias, fanfics y recomendaciones. 
-            Comparto mis descubrimientos favoritos y herramientas para encontrar 
-            la lectura perfecta.
-          </p>
-          <div className="social-links">
-            <a href="#" className="social-link">
-              <i className="fab fa-twitter"></i>
-            </a>
-            <a href="#" className="social-link">
-              <i className="fab fa-facebook"></i>
-            </a>
-            <a href="#" className="social-link">
-              <i className="fas fa-globe"></i>
-            </a>
-          </div>
-        </Card.Body>
-      </Card>
 
       {/* Tag Cloud */}
       <Card className="sidebar-card tag-cloud-card">
@@ -82,45 +94,31 @@ function Sidebar() {
             Recent Posts
           </h6>
           <div className="recent-posts">
-            <div className="recent-post">
-              <div className="post-thumbnail">
-                <div className="thumbnail-placeholder">
-                  <i className="fas fa-book"></i>
+            {loading ? (
+              <div className="text-center">
+                <p>Cargando...</p>
+              </div>
+            ) : recentPosts.length > 0 ? (
+              recentPosts.map((post, index) => (
+                <div key={index} className="recent-post">
+                  <div className="post-thumbnail">
+                    <div className="thumbnail-placeholder">
+                      <i className={getTypeIcon(post.type)}></i>
+                    </div>
+                  </div>
+                  <div className="post-info">
+                    <h6 className="post-title">
+                      <Link to={getTypeLink(post.type, post.id)}>{post.title}</Link>
+                    </h6>
+                    <p className="post-date">{post.date}</p>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center">
+                <p>No hay posts recientes</p>
               </div>
-              <div className="post-info">
-                <h6 className="post-title">
-                  <Link to="/reviews/1">Mi reseña de Harry Potter</Link>
-                </h6>
-                <p className="post-date">Septiembre 24, 2025</p>
-              </div>
-            </div>
-            <div className="recent-post">
-              <div className="post-thumbnail">
-                <div className="thumbnail-placeholder">
-                  <i className="fas fa-heart"></i>
-                </div>
-              </div>
-              <div className="post-info">
-                <h6 className="post-title">
-                  <Link to="/blog/1">Fanfics que me cambiaron la vida</Link>
-                </h6>
-                <p className="post-date">Septiembre 23, 2025</p>
-              </div>
-            </div>
-            <div className="recent-post">
-              <div className="post-thumbnail">
-                <div className="thumbnail-placeholder">
-                  <i className="fas fa-star"></i>
-                </div>
-              </div>
-              <div className="post-info">
-                <h6 className="post-title">
-                  <Link to="/reviews/2">Top 5 fanfics de romance</Link>
-                </h6>
-                <p className="post-date">Septiembre 22, 2025</p>
-              </div>
-            </div>
+            )}
           </div>
         </Card.Body>
       </Card>

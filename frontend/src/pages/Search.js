@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Container, 
   Row, 
@@ -22,16 +22,7 @@ function Search() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
 
-  // Ejecutar búsqueda automática si hay query en URL
-  useEffect(() => {
-    const urlQuery = searchParams.get('q');
-    if (urlQuery && urlQuery !== query) {
-      setQuery(urlQuery);
-      performSearch(urlQuery);
-    }
-  }, [searchParams, query]);
-
-  const performSearch = async (searchQuery = query) => {
+  const performSearch = useCallback(async (searchQuery = query) => {
     if (!searchQuery.trim()) return;
 
     setLoading(true);
@@ -60,7 +51,16 @@ function Search() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [query, setSearchParams]);
+
+  // Ejecutar búsqueda automática si hay query en URL
+  useEffect(() => {
+    const urlQuery = searchParams.get('q');
+    if (urlQuery && urlQuery !== query) {
+      setQuery(urlQuery);
+      performSearch(urlQuery);
+    }
+  }, [searchParams, query, performSearch]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

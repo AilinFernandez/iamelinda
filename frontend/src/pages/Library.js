@@ -1,12 +1,36 @@
-import React, { useState } from 'react';
-import { Row, Col, Card, Badge, Button, Form } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Card, Badge, Button, Form, Spinner } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
+import API_BASE_URL from '../config/api';
 
 function Library() {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [libraryItems, setLibraryItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const libraryItems = [];
+  useEffect(() => {
+    loadLibraryItems();
+  }, []);
+
+  const loadLibraryItems = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/library`);
+      if (!response.ok) {
+        throw new Error('Error al cargar biblioteca');
+      }
+      const data = await response.json();
+      setLibraryItems(data);
+    } catch (error) {
+      console.error('Error cargando biblioteca:', error);
+      setError('Error al cargar la biblioteca');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredItems = libraryItems.filter(item => {
     const matchesFilter = filter === 'all' || item.type.toLowerCase() === filter;
@@ -66,11 +90,31 @@ function Library() {
         </div>
 
         {/* Library Grid */}
-        <Row className="g-4">
-          {filteredItems.map((item) => (
-            <Col md={6} lg={4} key={item.id}>
-              <Card className="library-card">
-                <Card.Body>
+        {loading ? (
+          <div className="text-center">
+            <Spinner animation="border" variant="primary" />
+            <p className="mt-3">Cargando biblioteca...</p>
+          </div>
+        ) : error ? (
+          <div className="alert alert-danger">
+            {error}
+          </div>
+        ) : (
+          <Row className="g-4">
+            {filteredItems.map((item) => (
+              <Col md={6} lg={4} key={item.id}>
+                <Link to={`/library/${item.id}`} style={{ textDecoration: 'none' }}>
+                  <Card className="library-card">
+                    {item.coverImage && (
+                      <div className="library-image">
+                        <img 
+                          src={item.coverImage} 
+                          alt={item.title}
+                          className="library-banner-img"
+                        />
+                      </div>
+                    )}
+                    <Card.Body>
                   <div className="library-item-header">
                     <div className="item-type-badge">
                       <Badge className={`type-badge ${item.type.toLowerCase()}`}>
@@ -100,23 +144,26 @@ function Library() {
                   
                   <p className="item-description">{item.description}</p>
                   
-                  <div className="item-tags">
-                    {item.tags.map((tag, index) => (
-                      <Badge key={index} className="item-tag">{tag}</Badge>
-                    ))}
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-
-        {filteredItems.length === 0 && (
-          <div className="no-results">
-            <i className="fas fa-book"></i>
-            <h5>Próximamente</h5>
-            <p>Mi biblioteca personal estará disponible pronto. ¡Mantente atento!</p>
-          </div>
+                    <div className="item-tags">
+                      {item.tags && Array.isArray(item.tags) && item.tags.map((tag, index) => (
+                        <Badge key={index} className="item-tag">{tag}</Badge>
+                      ))}
+                    </div>
+                  </Card.Body>
+                </Card>
+                </Link>
+              </Col>
+            ))}
+            {filteredItems.length === 0 && (
+              <Col md={12}>
+                <div className="no-results">
+                  <i className="fas fa-book"></i>
+                  <h5>Próximamente</h5>
+                  <p>Mi biblioteca personal estará disponible pronto. ¡Mantente atento!</p>
+                </div>
+              </Col>
+            )}
+          </Row>
         )}
       </div>
     </Layout>

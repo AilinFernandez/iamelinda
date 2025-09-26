@@ -7,15 +7,16 @@ import {
   Form, 
   Button, 
   Alert, 
-  Modal,
   Spinner,
   Badge,
   Table,
   Tabs,
-  Tab
+  Tab,
+  Modal
 } from 'react-bootstrap';
 import axios from 'axios';
 import API_BASE_URL from '../config/api';
+import RichTextEditor from '../components/RichTextEditor';
 
 function Admin() {
   const [password, setPassword] = useState('');
@@ -49,22 +50,37 @@ function Admin() {
   const [posts, setPosts] = useState([]);
   const [libraryItems, setLibraryItems] = useState([]);
   
+  // Estados para buscadores
+  const [searchReviews, setSearchReviews] = useState('');
+  const [searchPosts, setSearchPosts] = useState('');
+  const [searchLibrary, setSearchLibrary] = useState('');
+  
+  // Estados para modales de edición
+  const [showEditReview, setShowEditReview] = useState(false);
+  const [showEditPost, setShowEditPost] = useState(false);
+  const [showEditLibrary, setShowEditLibrary] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  
   // Estados para formularios
   const [reviewForm, setReviewForm] = useState({
     title: '',
     summary: '',
+    content: '',
     category: 'Books',
     rating: 5,
     tags: '',
-    image: 'book'
+    image: 'book',
+    bannerImage: ''
   });
   
   const [postForm, setPostForm] = useState({
     title: '',
     summary: '',
+    content: '',
     category: 'Personal',
     tags: '',
-    image: 'heart'
+    image: 'heart',
+    bannerImage: ''
   });
   
   const [libraryForm, setLibraryForm] = useState({
@@ -76,7 +92,8 @@ function Admin() {
     status: 'Completed',
     year: '',
     description: '',
-    tags: ''
+    tags: '',
+    coverImage: '' // Nuevo campo para imagen de portada
   });
 
   // Verificar autenticación y cargar datos
@@ -88,6 +105,18 @@ function Admin() {
       loadAdminData(savedPassword);
     }
   }, []);
+
+  // Cargar datos automáticamente cuando se autentica
+  useEffect(() => {
+    if (isAuthenticated) {
+      const savedPassword = localStorage.getItem('admin_password');
+      if (savedPassword) {
+        loadReviews();
+        loadPosts();
+        loadLibraryItems();
+      }
+    }
+  }, [isAuthenticated]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -103,10 +132,14 @@ function Admin() {
       setIsAuthenticated(true);
       localStorage.setItem('admin_password', password);
       setStats(response.data);
-      loadFanfics();
-      loadReviews();
-      loadPosts();
-      loadLibraryItems();
+      
+      // Cargar todos los datos en paralelo
+      await Promise.all([
+        loadFanfics(),
+        loadReviews(),
+        loadPosts(),
+        loadLibraryItems()
+      ]);
     } catch (error) {
       setError('Contraseña incorrecta');
     } finally {
@@ -182,6 +215,26 @@ function Admin() {
     }
   };
 
+  // Funciones de filtrado
+  const filteredReviews = reviews.filter(review => 
+    review.title.toLowerCase().includes(searchReviews.toLowerCase()) ||
+    review.category.toLowerCase().includes(searchReviews.toLowerCase()) ||
+    (review.tags && review.tags.some(tag => tag.toLowerCase().includes(searchReviews.toLowerCase())))
+  );
+
+  const filteredPosts = posts.filter(post => 
+    post.title.toLowerCase().includes(searchPosts.toLowerCase()) ||
+    post.category.toLowerCase().includes(searchPosts.toLowerCase()) ||
+    (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchPosts.toLowerCase())))
+  );
+
+  const filteredLibraryItems = libraryItems.filter(item => 
+    item.title.toLowerCase().includes(searchLibrary.toLowerCase()) ||
+    item.author.toLowerCase().includes(searchLibrary.toLowerCase()) ||
+    item.type.toLowerCase().includes(searchLibrary.toLowerCase()) ||
+    (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchLibrary.toLowerCase())))
+  );
+
   // Funciones para crear nuevo contenido
   const handleCreateReview = async (e) => {
     e.preventDefault();
@@ -208,10 +261,12 @@ function Admin() {
       setReviewForm({
         title: '',
         summary: '',
+        content: '',
         category: 'Books',
         rating: 5,
         tags: '',
-        image: 'book'
+        image: 'book',
+        bannerImage: ''
       });
       loadReviews();
     } catch (error) {
@@ -246,9 +301,11 @@ function Admin() {
       setPostForm({
         title: '',
         summary: '',
+        content: '',
         category: 'Personal',
         tags: '',
-        image: 'heart'
+        image: 'heart',
+        bannerImage: ''
       });
       loadPosts();
     } catch (error) {
@@ -283,7 +340,8 @@ function Admin() {
         status: 'Completed',
         year: '',
         description: '',
-        tags: ''
+        tags: '',
+        coverImage: '' // Reset del campo de imagen de portada
       });
       loadLibraryItems();
     } catch (error) {
@@ -370,7 +428,7 @@ function Admin() {
     if (!window.confirm('¿Estás seguro de eliminar este fanfic?')) return;
 
     try {
-      await axios.delete(`/api/admin/fanfics/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/admin/fanfics/${id}`, {
         headers: { password }
       });
       setSuccess('Fanfic eliminado exitosamente');
@@ -378,6 +436,152 @@ function Admin() {
       loadAdminData(password);
     } catch (error) {
       setError('Error eliminando fanfic');
+    }
+  };
+
+  // Funciones de eliminación para nuevo contenido
+  const deleteReview = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar esta reseña?')) return;
+
+    try {
+      await axios.delete(`${API_BASE_URL}/api/admin/reviews/${id}`, {
+        headers: { password }
+      });
+      setSuccess('Reseña eliminada exitosamente');
+      loadReviews();
+    } catch (error) {
+      setError('Error eliminando reseña');
+    }
+  };
+
+  const deletePost = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este post?')) return;
+
+    try {
+      await axios.delete(`${API_BASE_URL}/api/admin/posts/${id}`, {
+        headers: { password }
+      });
+      setSuccess('Post eliminado exitosamente');
+      loadPosts();
+    } catch (error) {
+      setError('Error eliminando post');
+    }
+  };
+
+  const deleteLibraryItem = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este item de biblioteca?')) return;
+
+    try {
+      await axios.delete(`${API_BASE_URL}/api/admin/library/${id}`, {
+        headers: { password }
+      });
+      setSuccess('Item de biblioteca eliminado exitosamente');
+      loadLibraryItems();
+    } catch (error) {
+      setError('Error eliminando item de biblioteca');
+    }
+  };
+
+  // Funciones para editar contenido
+  const handleEditReview = (review) => {
+    setEditingItem(review);
+    // Pre-llenar el formulario con los datos existentes
+    setReviewForm({
+      title: review.title,
+      summary: review.summary,
+      content: review.content || '',
+      category: review.category,
+      rating: review.rating,
+      bannerImage: review.bannerImage || '',
+      tags: review.tags ? (Array.isArray(review.tags) ? review.tags.join(', ') : review.tags) : ''
+    });
+    setShowEditReview(true);
+  };
+
+  const handleEditPost = (post) => {
+    setEditingItem(post);
+    // Pre-llenar el formulario con los datos existentes
+    setPostForm({
+      title: post.title,
+      summary: post.summary,
+      content: post.content || '',
+      category: post.category,
+      readTime: post.readTime,
+      bannerImage: post.bannerImage || '',
+      tags: post.tags ? (Array.isArray(post.tags) ? post.tags.join(', ') : post.tags) : ''
+    });
+    setShowEditPost(true);
+  };
+
+  const handleEditLibraryItem = (item) => {
+    setEditingItem(item);
+    // Pre-llenar el formulario con los datos existentes
+    setLibraryForm({
+      title: item.title,
+      author: item.author,
+      type: item.type,
+      genre: item.genre,
+      rating: item.rating,
+      status: item.status,
+      year: item.year || '',
+      description: item.description || '',
+      tags: item.tags ? (Array.isArray(item.tags) ? item.tags.join(', ') : item.tags) : '',
+      coverImage: item.coverImage || ''
+    });
+    setShowEditLibrary(true);
+  };
+
+  const handleUpdateReview = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.put(`${API_BASE_URL}/api/admin/reviews/${editingItem.id}`, reviewForm, {
+        headers: { password }
+      });
+      setSuccess('Reseña actualizada exitosamente');
+      setShowEditReview(false);
+      setEditingItem(null);
+      loadReviews();
+    } catch (error) {
+      setError('Error actualizando reseña');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdatePost = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.put(`${API_BASE_URL}/api/admin/posts/${editingItem.id}`, postForm, {
+        headers: { password }
+      });
+      setSuccess('Post actualizado exitosamente');
+      setShowEditPost(false);
+      setEditingItem(null);
+      loadPosts();
+    } catch (error) {
+      setError('Error actualizando post');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateLibraryItem = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.put(`${API_BASE_URL}/api/admin/library/${editingItem.id}`, libraryForm, {
+        headers: { password }
+      });
+      setSuccess('Item de biblioteca actualizado exitosamente');
+      setShowEditLibrary(false);
+      setEditingItem(null);
+      loadLibraryItems();
+    } catch (error) {
+      setError('Error actualizando item de biblioteca');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -738,13 +942,40 @@ function Admin() {
                       </Form.Group>
                       
                       <Form.Group className="mb-3">
-                        <Form.Label>Resumen</Form.Label>
+                        <Form.Label>URL de Imagen Banner</Form.Label>
                         <Form.Control
-                          as="textarea"
-                          rows={4}
-                          value={reviewForm.summary}
-                          onChange={(e) => setReviewForm({...reviewForm, summary: e.target.value})}
-                          required
+                          type="url"
+                          value={reviewForm.bannerImage}
+                          onChange={(e) => setReviewForm({...reviewForm, bannerImage: e.target.value})}
+                          placeholder="https://ejemplo.com/imagen.jpg"
+                        />
+                        <Form.Text className="text-muted">
+                          Pega aquí la URL de la imagen que quieres usar como banner
+                        </Form.Text>
+                      </Form.Group>
+                      
+                        <Form.Group className="mb-3">
+                          <Form.Label>Resumen (máximo 7 renglones)</Form.Label>
+                          <Form.Control
+                            as="textarea"
+                            rows={7}
+                            maxLength={500}
+                            value={reviewForm.summary}
+                            onChange={(e) => setReviewForm({...reviewForm, summary: e.target.value})}
+                            required
+                            placeholder="Escribe un resumen conciso de máximo 7 renglones..."
+                          />
+                          <Form.Text className="text-muted">
+                            {reviewForm.summary.length}/500 caracteres
+                          </Form.Text>
+                        </Form.Group>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Contenido Completo</Form.Label>
+                        <RichTextEditor
+                          value={reviewForm.content}
+                          onChange={(content) => setReviewForm({...reviewForm, content})}
+                          placeholder="Escribe aquí el contenido completo de la reseña..."
                         />
                       </Form.Group>
                       
@@ -815,23 +1046,63 @@ function Admin() {
                   <Card.Header>
                     <h5>
                       <i className="bi bi-list me-2"></i>
-                      Reseñas Existentes ({reviews.length})
+                      Reseñas Existentes ({filteredReviews.length})
                     </h5>
                   </Card.Header>
                   <Card.Body>
+                    {/* Buscador */}
+                    <Form.Group className="mb-3">
+                      <Form.Control
+                        type="text"
+                        placeholder="Buscar reseñas..."
+                        value={searchReviews}
+                        onChange={(e) => setSearchReviews(e.target.value)}
+                        className="mb-3"
+                      />
+                    </Form.Group>
+                    
                     <div style={{maxHeight: '400px', overflowY: 'auto'}}>
-                      {reviews.map((review) => (
+                      {filteredReviews.map((review) => (
                         <div key={review.id} className="mb-3 p-3 border rounded">
-                          <h6>{review.title}</h6>
-                          <p className="text-muted small">{review.summary}</p>
-                          <Badge bg="secondary">{review.category}</Badge>
-                          <span className="ms-2">
-                            {Array.from({length: review.rating}).map((_, i) => (
-                              <i key={i} className="bi bi-star-fill text-warning"></i>
-                            ))}
-                          </span>
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div className="flex-grow-1">
+                              <h6>{review.title}</h6>
+                              <p className="text-muted small">{review.summary}</p>
+                              <div className="d-flex align-items-center gap-2">
+                                <Badge bg="secondary">{review.category}</Badge>
+                                <span>
+                                  {Array.from({length: review.rating}).map((_, i) => (
+                                    <i key={i} className="bi bi-star-fill text-warning"></i>
+                                  ))}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => handleEditReview(review)}
+                                title="Editar reseña"
+                              >
+                                <i className="bi bi-pencil"></i>
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => deleteReview(review.id)}
+                                title="Eliminar reseña"
+                              >
+                                <i className="bi bi-trash"></i>
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       ))}
+                      {filteredReviews.length === 0 && (
+                        <div className="text-center text-muted py-3">
+                          {searchReviews ? 'No se encontraron reseñas' : 'No hay reseñas creadas'}
+                        </div>
+                      )}
                     </div>
                   </Card.Body>
                 </Card>
@@ -863,13 +1134,40 @@ function Admin() {
                       </Form.Group>
                       
                       <Form.Group className="mb-3">
-                        <Form.Label>Resumen</Form.Label>
+                        <Form.Label>URL de Imagen Banner</Form.Label>
                         <Form.Control
-                          as="textarea"
-                          rows={4}
-                          value={postForm.summary}
-                          onChange={(e) => setPostForm({...postForm, summary: e.target.value})}
-                          required
+                          type="url"
+                          value={postForm.bannerImage}
+                          onChange={(e) => setPostForm({...postForm, bannerImage: e.target.value})}
+                          placeholder="https://ejemplo.com/imagen.jpg"
+                        />
+                        <Form.Text className="text-muted">
+                          Pega aquí la URL de la imagen que quieres usar como banner
+                        </Form.Text>
+                      </Form.Group>
+                      
+                        <Form.Group className="mb-3">
+                          <Form.Label>Resumen (máximo 7 renglones)</Form.Label>
+                          <Form.Control
+                            as="textarea"
+                            rows={7}
+                            maxLength={500}
+                            value={postForm.summary}
+                            onChange={(e) => setPostForm({...postForm, summary: e.target.value})}
+                            required
+                            placeholder="Escribe un resumen conciso de máximo 7 renglones..."
+                          />
+                          <Form.Text className="text-muted">
+                            {postForm.summary.length}/500 caracteres
+                          </Form.Text>
+                        </Form.Group>
+                      
+                      <Form.Group className="mb-3">
+                        <Form.Label>Contenido Completo</Form.Label>
+                        <RichTextEditor
+                          value={postForm.content}
+                          onChange={(content) => setPostForm({...postForm, content})}
+                          placeholder="Escribe aquí el contenido completo del post..."
                         />
                       </Form.Group>
                       
@@ -924,18 +1222,59 @@ function Admin() {
                   <Card.Header>
                     <h5>
                       <i className="bi bi-list me-2"></i>
-                      Posts Existentes ({posts.length})
+                      Posts Existentes ({filteredPosts.length})
                     </h5>
                   </Card.Header>
                   <Card.Body>
+                    {/* Buscador */}
+                    <Form.Group className="mb-3">
+                      <Form.Control
+                        type="text"
+                        placeholder="Buscar posts..."
+                        value={searchPosts}
+                        onChange={(e) => setSearchPosts(e.target.value)}
+                        className="mb-3"
+                      />
+                    </Form.Group>
+                    
                     <div style={{maxHeight: '400px', overflowY: 'auto'}}>
-                      {posts.map((post) => (
+                      {filteredPosts.map((post) => (
                         <div key={post.id} className="mb-3 p-3 border rounded">
-                          <h6>{post.title}</h6>
-                          <p className="text-muted small">{post.summary}</p>
-                          <Badge bg="info">{post.category}</Badge>
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div className="flex-grow-1">
+                              <h6>{post.title}</h6>
+                              <p className="text-muted small">{post.summary}</p>
+                              <div className="d-flex align-items-center gap-2">
+                                <Badge bg="info">{post.category}</Badge>
+                                <span className="text-muted">{post.readTime}</span>
+                              </div>
+                            </div>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => handleEditPost(post)}
+                                title="Editar post"
+                              >
+                                <i className="bi bi-pencil"></i>
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => deletePost(post.id)}
+                                title="Eliminar post"
+                              >
+                                <i className="bi bi-trash"></i>
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       ))}
+                      {filteredPosts.length === 0 && (
+                        <div className="text-center text-muted py-3">
+                          {searchPosts ? 'No se encontraron posts' : 'No hay posts creados'}
+                        </div>
+                      )}
                     </div>
                   </Card.Body>
                 </Card>
@@ -1065,6 +1404,19 @@ function Admin() {
                         />
                       </Form.Group>
                       
+                      <Form.Group className="mb-3">
+                        <Form.Label>URL de Imagen de Portada</Form.Label>
+                        <Form.Control
+                          type="url"
+                          value={libraryForm.coverImage}
+                          onChange={(e) => setLibraryForm({...libraryForm, coverImage: e.target.value})}
+                          placeholder="https://ejemplo.com/portada-libro.jpg"
+                        />
+                        <Form.Text className="text-muted">
+                          Pega aquí la URL de la imagen de portada del libro/libro/serie
+                        </Form.Text>
+                      </Form.Group>
+                      
                       <Button type="submit" variant="primary" disabled={loading}>
                         {loading ? <Spinner size="sm" /> : 'Agregar a Biblioteca'}
                       </Button>
@@ -1078,29 +1430,67 @@ function Admin() {
                   <Card.Header>
                     <h5>
                       <i className="bi bi-list me-2"></i>
-                      Biblioteca ({libraryItems.length})
+                      Biblioteca ({filteredLibraryItems.length})
                     </h5>
                   </Card.Header>
                   <Card.Body>
+                    {/* Buscador */}
+                    <Form.Group className="mb-3">
+                      <Form.Control
+                        type="text"
+                        placeholder="Buscar en biblioteca..."
+                        value={searchLibrary}
+                        onChange={(e) => setSearchLibrary(e.target.value)}
+                        className="mb-3"
+                      />
+                    </Form.Group>
+                    
                     <div style={{maxHeight: '400px', overflowY: 'auto'}}>
-                      {libraryItems.map((item) => (
+                      {filteredLibraryItems.map((item) => (
                         <div key={item.id} className="mb-3 p-3 border rounded">
-                          <h6>{item.title}</h6>
-                          <p className="text-muted small">por {item.author}</p>
-                          <div className="d-flex gap-2">
-                            <Badge bg="primary">{item.type}</Badge>
-                            <Badge bg="secondary">{item.genre}</Badge>
-                            <Badge bg={item.status === 'Completed' ? 'success' : 'warning'}>
-                              {item.status}
-                            </Badge>
-                            <span>
-                              {Array.from({length: item.rating}).map((_, i) => (
-                                <i key={i} className="bi bi-star-fill text-warning"></i>
-                              ))}
-                            </span>
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div className="flex-grow-1">
+                              <h6>{item.title}</h6>
+                              <p className="text-muted small">por {item.author}</p>
+                              <div className="d-flex gap-2 align-items-center">
+                                <Badge bg="primary">{item.type}</Badge>
+                                <Badge bg="secondary">{item.genre}</Badge>
+                                <Badge bg={item.status === 'Completed' ? 'success' : 'warning'}>
+                                  {item.status}
+                                </Badge>
+                                <span>
+                                  {Array.from({length: item.rating}).map((_, i) => (
+                                    <i key={i} className="bi bi-star-fill text-warning"></i>
+                                  ))}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => handleEditLibraryItem(item)}
+                                title="Editar item"
+                              >
+                                <i className="bi bi-pencil"></i>
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => deleteLibraryItem(item.id)}
+                                title="Eliminar item"
+                              >
+                                <i className="bi bi-trash"></i>
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))}
+                      {filteredLibraryItems.length === 0 && (
+                        <div className="text-center text-muted py-3">
+                          {searchLibrary ? 'No se encontraron items' : 'No hay items en biblioteca'}
+                        </div>
+                      )}
                     </div>
                   </Card.Body>
                 </Card>
@@ -1109,6 +1499,347 @@ function Admin() {
           </Tab>
         </Tabs>
       </Container>
+
+      {/* Modal de edición de Reseña */}
+      <Modal show={showEditReview} onHide={() => setShowEditReview(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Editar Reseña</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleUpdateReview}>
+            <Form.Group className="mb-3">
+              <Form.Label>Título</Form.Label>
+              <Form.Control
+                type="text"
+                value={reviewForm.title}
+                onChange={(e) => setReviewForm({...reviewForm, title: e.target.value})}
+                required
+              />
+            </Form.Group>
+            
+            <Form.Group className="mb-3">
+              <Form.Label>Resumen (máximo 7 renglones)</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={7}
+                maxLength={500}
+                value={reviewForm.summary}
+                onChange={(e) => setReviewForm({...reviewForm, summary: e.target.value})}
+                required
+                placeholder="Escribe un resumen conciso de máximo 7 renglones..."
+              />
+              <Form.Text className="text-muted">
+                {reviewForm.summary.length}/500 caracteres
+              </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Contenido</Form.Label>
+              <RichTextEditor
+                value={reviewForm.content}
+                onChange={(content) => setReviewForm({...reviewForm, content})}
+              />
+            </Form.Group>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Categoría</Form.Label>
+                  <Form.Select
+                    value={reviewForm.category}
+                    onChange={(e) => setReviewForm({...reviewForm, category: e.target.value})}
+                  >
+                    <option value="Book">Libro</option>
+                    <option value="Movie">Película</option>
+                    <option value="Series">Serie</option>
+                    <option value="Fanfic">Fanfic</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Calificación</Form.Label>
+                  <Form.Select
+                    value={reviewForm.rating}
+                    onChange={(e) => setReviewForm({...reviewForm, rating: parseInt(e.target.value)})}
+                  >
+                    {[1,2,3,4,5].map(rating => (
+                      <option key={rating} value={rating}>{rating} estrella{rating > 1 ? 's' : ''}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label>URL de Imagen Banner</Form.Label>
+              <Form.Control
+                type="url"
+                value={reviewForm.bannerImage}
+                onChange={(e) => setReviewForm({...reviewForm, bannerImage: e.target.value})}
+                placeholder="https://ejemplo.com/imagen-banner.jpg"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Etiquetas (separadas por comas)</Form.Label>
+              <Form.Control
+                type="text"
+                value={reviewForm.tags}
+                onChange={(e) => setReviewForm({...reviewForm, tags: e.target.value})}
+                placeholder="fantasía, aventura, romance"
+              />
+            </Form.Group>
+
+            <div className="d-flex gap-2">
+              <Button variant="primary" type="submit" disabled={loading}>
+                {loading ? 'Guardando...' : 'Guardar Cambios'}
+              </Button>
+              <Button variant="secondary" onClick={() => setShowEditReview(false)}>
+                Cancelar
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Modal de edición de Post */}
+      <Modal show={showEditPost} onHide={() => setShowEditPost(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Editar Post de Blog</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleUpdatePost}>
+            <Form.Group className="mb-3">
+              <Form.Label>Título</Form.Label>
+              <Form.Control
+                type="text"
+                value={postForm.title}
+                onChange={(e) => setPostForm({...postForm, title: e.target.value})}
+                required
+              />
+            </Form.Group>
+            
+            <Form.Group className="mb-3">
+              <Form.Label>Resumen (máximo 7 renglones)</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={7}
+                maxLength={500}
+                value={postForm.summary}
+                onChange={(e) => setPostForm({...postForm, summary: e.target.value})}
+                required
+                placeholder="Escribe un resumen conciso de máximo 7 renglones..."
+              />
+              <Form.Text className="text-muted">
+                {postForm.summary.length}/500 caracteres
+              </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Contenido</Form.Label>
+              <RichTextEditor
+                value={postForm.content}
+                onChange={(content) => setPostForm({...postForm, content})}
+              />
+            </Form.Group>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Categoría</Form.Label>
+                  <Form.Select
+                    value={postForm.category}
+                    onChange={(e) => setPostForm({...postForm, category: e.target.value})}
+                  >
+                    <option value="Personal">Personal</option>
+                    <option value="Tecnología">Tecnología</option>
+                    <option value="Libros">Libros</option>
+                    <option value="Fanfics">Fanfics</option>
+                    <option value="Otros">Otros</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Tiempo de lectura</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={postForm.readTime}
+                    onChange={(e) => setPostForm({...postForm, readTime: e.target.value})}
+                    placeholder="5 min"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label>URL de Imagen Banner</Form.Label>
+              <Form.Control
+                type="url"
+                value={postForm.bannerImage}
+                onChange={(e) => setPostForm({...postForm, bannerImage: e.target.value})}
+                placeholder="https://ejemplo.com/imagen-banner.jpg"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Etiquetas (separadas por comas)</Form.Label>
+              <Form.Control
+                type="text"
+                value={postForm.tags}
+                onChange={(e) => setPostForm({...postForm, tags: e.target.value})}
+                placeholder="personal, reflexiones, vida"
+              />
+            </Form.Group>
+
+            <div className="d-flex gap-2">
+              <Button variant="primary" type="submit" disabled={loading}>
+                {loading ? 'Guardando...' : 'Guardar Cambios'}
+              </Button>
+              <Button variant="secondary" onClick={() => setShowEditPost(false)}>
+                Cancelar
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Modal de edición de Biblioteca */}
+      <Modal show={showEditLibrary} onHide={() => setShowEditLibrary(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Editar Item de Biblioteca</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleUpdateLibraryItem}>
+            <Form.Group className="mb-3">
+              <Form.Label>Título</Form.Label>
+              <Form.Control
+                type="text"
+                value={libraryForm.title}
+                onChange={(e) => setLibraryForm({...libraryForm, title: e.target.value})}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Autor</Form.Label>
+              <Form.Control
+                type="text"
+                value={libraryForm.author}
+                onChange={(e) => setLibraryForm({...libraryForm, author: e.target.value})}
+                required
+              />
+            </Form.Group>
+            
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Tipo</Form.Label>
+                  <Form.Select
+                    value={libraryForm.type}
+                    onChange={(e) => setLibraryForm({...libraryForm, type: e.target.value})}
+                  >
+                    <option value="Book">Libro</option>
+                    <option value="Fanfic">Fanfic</option>
+                    <option value="Series">Serie</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Género</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={libraryForm.genre}
+                    onChange={(e) => setLibraryForm({...libraryForm, genre: e.target.value})}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Calificación</Form.Label>
+                  <Form.Select
+                    value={libraryForm.rating}
+                    onChange={(e) => setLibraryForm({...libraryForm, rating: parseInt(e.target.value)})}
+                  >
+                    {[1,2,3,4,5].map(rating => (
+                      <option key={rating} value={rating}>{rating} estrella{rating > 1 ? 's' : ''}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Estado</Form.Label>
+                  <Form.Select
+                    value={libraryForm.status}
+                    onChange={(e) => setLibraryForm({...libraryForm, status: e.target.value})}
+                  >
+                    <option value="Completed">Completado</option>
+                    <option value="Reading">Leyendo</option>
+                    <option value="Want to Read">Quiero leer</option>
+                    <option value="Dropped">Abandonado</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Año</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={libraryForm.year}
+                    onChange={(e) => setLibraryForm({...libraryForm, year: e.target.value})}
+                    placeholder="2023"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Descripción</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={libraryForm.description}
+                onChange={(e) => setLibraryForm({...libraryForm, description: e.target.value})}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>URL de Imagen de Portada</Form.Label>
+              <Form.Control
+                type="url"
+                value={libraryForm.coverImage}
+                onChange={(e) => setLibraryForm({...libraryForm, coverImage: e.target.value})}
+                placeholder="https://ejemplo.com/portada-libro.jpg"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Etiquetas (separadas por comas)</Form.Label>
+              <Form.Control
+                type="text"
+                value={libraryForm.tags}
+                onChange={(e) => setLibraryForm({...libraryForm, tags: e.target.value})}
+                placeholder="fantasía, aventura, romance"
+              />
+            </Form.Group>
+
+            <div className="d-flex gap-2">
+              <Button variant="primary" type="submit" disabled={loading}>
+                {loading ? 'Guardando...' : 'Guardar Cambios'}
+              </Button>
+              <Button variant="secondary" onClick={() => setShowEditLibrary(false)}>
+                Cancelar
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }
